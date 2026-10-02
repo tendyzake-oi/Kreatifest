@@ -1,0 +1,81 @@
+.footer {
+  position: relative;
+  overflow: hidden;
+  padding-block: 4rem 2.25rem;
+  background: var(--color-footer-bg);
+  color: var(--color-text-inverse-muted);
+}
+
+/* Dekorasi cincin di pojok kanan bawah */
+.footer__ring {
+  position: absolute;
+  right: -3.5rem;
+  bottom: -5.5rem;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 50%;
+  border: 2.5rem solid var(--brand-coral);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.footer__inner { position: relative; }
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1.5fr 1fr;
+  gap: 2rem;
+}
+
+.footer__link {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  line-height: 1.4;
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer__link svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.footer__logo {
+  margin-bottom: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-text-inverse);
+}
+.footer__desc { max-width: 26rem; font-size: 0.95rem; line-height: 1.75; }
+
+.footer__col-title {
+  margin-bottom: 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: var(--brand-amber);
+}
+.footer__col li + li { margin-top: 0.7rem; }
+.footer__col a { font-size: 0.95rem; transition: color 0.2s var(--ease); }
+.footer__col a:hover { color: var(--color-text-inverse); }
+
+.footer__copy {
+  margin-top: 3rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 48rem) {
+  .footer__grid { 
+    grid-template-columns: 1fr 1fr; 
+  }
+  .footer__brand { 
+    grid-column: 1 / -1; 
+  }
+}

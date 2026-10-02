@@ -1,0 +1,95 @@
+.projects .section-heading { max-width: 36rem; }
+.projects__carousel { margin-top: 2.5rem; }
+.projects__viewport { overflow: hidden; }
+.projects__track {
+  display: flex;
+  gap: 1.25rem;
+  width: 100%;
+  margin: 0;
+  transition: transform 0.45s var(--ease);
+  will-change: transform;
+}
+.projects__track--resetting { transition: none; }
+.projects__item {
+  flex: 0 0 calc((100% - 2.5rem) / 3);
+  min-width: 0;
+}
+.projects__controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  margin-top: 1rem;
+}
+.projects__control {
+  display: grid;
+  width: 2.75rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+  transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.projects__control:hover {
+  background: var(--color-surface-muted);
+  transform: translateY(-2px);
+}
+.projects__control--previous svg { transform: rotate(180deg); }
+
+.project-card {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.project-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
+
+.project-card__photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  margin: 0;
+  background: var(--color-surface-muted);
+}
+.project-card__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease);
+}
+.project-card:hover .project-card__photo img { transform: scale(1.04); }
+
+.project-card__placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: var(--color-text-soft);
+  background:
+    linear-gradient(135deg, transparent 49.8%, var(--color-border) 50%, transparent 50.2%),
+    var(--color-surface-muted);
+  font-size: 0.85rem;
+}
+
+.project-card__caption {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 3.5rem 1.25rem 1.25rem;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(23, 21, 48, 0.82));
+}
+.project-card__caption h3 { font-size: 1.15rem; color: inherit; }
+
+@media (max-width: 56rem) {
+  .projects__item { flex-basis: calc((100% - 1.25rem) / 2); }
+}
+@media (max-width: 36rem) {
+  .projects__item { flex-basis: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projects__track { transition: none; }
+}

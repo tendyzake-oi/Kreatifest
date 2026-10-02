@@ -1,0 +1,12 @@
+.cta { padding-bottom: var(--section-space); }
+
+.cta__panel {
+  padding: clamp(2.5rem, 6vw, 4.5rem) 1.5rem clamp(2.5rem, 6vw, 4.25rem);
+  border-radius: var(--radius-xl);
+  background: var(--color-cta-bg);
+  text-align: center;
+  transition: background-color 0.3s var(--ease);
+}
+.cta__panel .section-heading__title { font-size: clamp(1.9rem, 3.4vw, 2.75rem); }
+.cta__panel .section-heading__desc { margin-top: 1rem; font-size: 1rem; }
+.cta__button { margin-top: 2rem; }

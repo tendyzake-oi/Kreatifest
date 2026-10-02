@@ -1,0 +1,52 @@
+/* Latar titik-titik halus di belakang panel */
+.impact {
+  background-image: radial-gradient(var(--color-dots) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+.impact__panel {
+  padding: clamp(1.5rem, 3.6vw, 3rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg);
+}
+
+.impact__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: 2.25rem;
+}
+.impact__head .section-heading { flex: 1 1 30rem; max-width: 40rem; }
+.impact__note { padding-bottom: 0.25rem; font-size: 0.9rem; color: var(--color-text-soft); }
+
+.impact__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.impact__stat {
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.impact__stat h3 { margin-top: 0.6rem; font-size: 1.05rem; }
+.impact__stat p { margin-top: 0.4rem; font-size: 0.92rem; color: var(--color-text-muted); }
+
+.impact__value {
+  display: block;
+  height: 3.25rem;
+  font-family: var(--font-display);
+  font-size: 3.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.impact__value--violet { color: var(--color-accent); }
+.impact__value--coral  { color: var(--brand-coral); }
+.impact__value--amber  { color: var(--color-amber-text); }
+
+@media (max-width: 52rem) {
+  .impact__stats { grid-template-columns: minmax(0, 1fr); }
+}

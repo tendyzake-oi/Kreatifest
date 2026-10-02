@@ -1,0 +1,35 @@
+.testimonial { padding-block: 1rem var(--section-space); }
+
+.testimonial__panel {
+  width: min(63.75rem, 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  padding: clamp(2rem, 5vw, 3.25rem) clamp(1.5rem, 8vw, 7rem);
+  border-radius: var(--radius-xl);
+  background: var(--color-testimonial-bg);
+  text-align: center;
+  transition: background-color 0.3s var(--ease);
+}
+.testimonial__icon { color: var(--brand-coral); }
+.testimonial__eyebrow {
+  margin: 1.1rem 0 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.testimonial__quote {
+  margin: 0 auto;
+  max-width: 44rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.testimonial__author {
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-soft);
+}

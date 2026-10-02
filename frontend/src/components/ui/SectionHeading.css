@@ -1,0 +1,27 @@
+.section-heading--center { text-align: center; }
+
+.section-heading__eyebrow {
+  margin-bottom: 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.section-heading--inverse .section-heading__eyebrow { color: var(--color-accent-label-inverse); }
+
+.section-heading__title {
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  line-height: 1.02;
+}
+.section-heading--inverse .section-heading__title { color: var(--color-text-inverse); }
+
+.section-heading__desc {
+  margin-top: 1.25rem;
+  max-width: 44rem;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--color-text-muted);
+}
+.section-heading--center .section-heading__desc { margin-inline: auto; }
+.section-heading--inverse .section-heading__desc { color: var(--color-text-inverse-muted); }

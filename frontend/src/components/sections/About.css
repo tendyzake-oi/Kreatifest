@@ -1,0 +1,82 @@
+.about__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 535fr) minmax(0, 630fr);
+  align-items: center;
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+/* ---------- Visual kiri ---------- */
+.about__visual {
+  position: relative;
+  overflow: hidden;
+  min-height: 25.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-plate);
+}
+.about__photo-card {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  margin: 0;
+  border-radius: inherit;
+  box-shadow: var(--shadow-hero);
+}
+.about__photo-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.about__glass {
+  position: absolute;
+  inset: auto 0 0;
+  display: grid;
+  gap: 0.35rem;
+  padding: 4rem 1.5rem 1.5rem;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(23, 21, 48, 0.8));
+}
+.about__glass-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--brand-amber);
+}
+.about__glass-text {
+  max-width: 26rem;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: inherit;
+}
+
+/* ---------- Teks kanan ---------- */
+.about__paragraphs { display: grid; gap: 1rem; margin-top: 1.25rem; }
+.about__paragraphs p { font-size: 1rem; line-height: 1.85; color: var(--color-text-muted); }
+
+.about__values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+.about__value {
+  padding: 1rem 1.1rem 1.15rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+/* Ikon di sini tanpa kotak latar agar lebih ringan */
+.about__value .icon-tile { width: auto; height: auto; background: none; margin-bottom: 0.4rem; }
+.about__value h3 { font-size: 1.05rem; margin-bottom: 0.3rem; }
+.about__value p { font-size: 0.9rem; color: var(--color-text-soft); line-height: 1.5; }
+
+@media (max-width: 62rem) {
+  .about__inner { grid-template-columns: minmax(0, 1fr); }
+  .about__visual { min-height: 22rem; }
+}
+@media (max-width: 34rem) {
+  .about__values { grid-template-columns: minmax(0, 1fr); }
+}
+
