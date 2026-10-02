@@ -39,10 +39,6 @@ function toOriginMatcher(pattern) {
 const originMatchers = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-  'https://kreatifest-v1.vercel.app',
-  'https://kreatifest-v1-v16n*.vercel.app',
-  'https://kreatifest-zesn-g2j7azgph-tendy3.vercel.app/',
-  'https://kreatifest-zesn-gplrpwq05-tendy3.vercel.app/',
   'https://kreatifest-zesn.vercel.app/',
   ...(process.env.FRONTEND_ORIGINS || '')
     .split(',')

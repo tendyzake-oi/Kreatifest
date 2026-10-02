@@ -8,7 +8,7 @@ export async function fetchLatestNews(signal) {
   const response = await fetch(`${apiBaseUrl}/api/news?limit=6`, {
     signal,
     cache: 'no-store',
-    headers: { 'Cache-Control': 'no-cache' },
+    headers: import.meta.env.DEV ? { 'Cache-Control': 'no-cache' } : {},
   })
 
   if (!response.ok) {
