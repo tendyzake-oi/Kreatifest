@@ -43,6 +43,7 @@ const originMatchers = [
   'https://kreatifest-v1-v16n*.vercel.app',
   'https://kreatifest-zesn-g2j7azgph-tendy3.vercel.app/',
   'https://kreatifest-zesn-gplrpwq05-tendy3.vercel.app/',
+  'https://kreatifest-zesn.vercel.app/',
   ...(process.env.FRONTEND_ORIGINS || '')
     .split(',')
     .map((pattern) => pattern.trim())
