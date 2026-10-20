@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import SectionHeading from '../ui/SectionHeading'
 import Icon from '../ui/Icon'
-import { fetchLatestNews } from '../../services/news'
+import { fetchLatestNews, FALLBACK_NEWS } from '../../services/news'
 import fallbackImage from '../../../Assets/default-news/default-news-foto.jpeg'
 import './News.css'
 
@@ -164,6 +164,8 @@ export default function News() {
         setNews(result)
       } catch (requestError) {
         if (requestError.name !== 'AbortError') {
+          // Tampilkan data fallback statis agar berita tetap ada di landing page
+          setNews(FALLBACK_NEWS)
           setError(requestError.message || 'Terjadi kendala saat memuat berita.')
         }
       } finally {
@@ -194,11 +196,11 @@ export default function News() {
           <p className="news-section__message" role="status">Memuat berita terbaru...</p>
         )}
 
-        {error && !hasArticles && (
-          <div className="news-section__message news-section__message--error" role="alert">
-            <p>{error}</p>
-            <button type="button" onClick={() => setAttempt((currentAttempt) => currentAttempt + 1)}>
-              Coba lagi
+        {error && (
+          <div className="news-section__notice" role="status">
+            <p>Menampilkan berita tersimpan. {error}</p>
+            <button type="button" className="news-section__refresh" onClick={() => setAttempt((currentAttempt) => currentAttempt + 1)}>
+              Muat ulang berita
             </button>
           </div>
         )}
@@ -209,7 +211,7 @@ export default function News() {
 
         {hasArticles && (
           <>
-            {news.stale && (
+            {news.stale && !error && (
               <p className="news-section__notice" role="status">
                 Menampilkan berita tersimpan karena sumber berita sedang tidak merespons.
               </p>
@@ -221,14 +223,16 @@ export default function News() {
             </div>
             <div className="news-section__updated">
               {news.updatedAt && <span>Data diperbarui {formatDate(news.updatedAt)} waktu Jakarta</span>}
-              <button
-                type="button"
-                className="news-section__refresh"
-                onClick={() => setAttempt((currentAttempt) => currentAttempt + 1)}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Memuat ulang...' : 'Muat ulang berita'}
-              </button>
+              {!error && (
+                <button
+                  type="button"
+                  className="news-section__refresh"
+                  onClick={() => setAttempt((currentAttempt) => currentAttempt + 1)}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Memuat ulang...' : 'Muat ulang berita'}
+                </button>
+              )}
             </div>
           </>
         )}

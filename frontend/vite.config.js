@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'https://kreatifest.onrender.com',
+      '/api': 'http://localhost:3001',
     },
   },
 })
