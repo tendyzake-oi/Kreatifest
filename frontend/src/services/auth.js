@@ -1,7 +1,7 @@
 const apiBaseUrl = (
   import.meta.env.VITE_AUTH_API_URL
   || import.meta.env.VITE_NEWS_API_URL
-  || (import.meta.env.DEV ? '' : 'https://kreatifest.onrender.com')
+  || (import.meta.env.DEV ? '' : 'https://kreatifest-ay1r.onrender.com')
 ).replace(/\/$/, '')
 
 export const AUTH_TOKEN_KEY = 'kreatifest-auth-token'
