@@ -1,4 +1,4 @@
-const apiBaseUrl = (import.meta.env.VITE_NEWS_API_URL || 'https://kreatifest.vercel.app/').replace(/\/$/, '')
+const apiBaseUrl = (import.meta.env.VITE_NEWS_API_URL || 'https://kreatifest-zesn.vercel.app/').replace(/\/$/, '')
 
 /**
  * Selalu meminta data terbaru: `cache: 'no-store'` menembus cache HTTP browser,

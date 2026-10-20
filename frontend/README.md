@@ -20,6 +20,8 @@ npm run dev
 
 Saat development, Vite meneruskan permintaan `/api` ke `http://localhost:3001`. Untuk deployment dengan frontend dan backend pada domain berbeda, atur `VITE_NEWS_API_URL` pada saat build frontend dan `FRONTEND_ORIGINS` pada backend. Jika backend berjalan di balik satu reverse proxy, atur `TRUST_PROXY_HOPS=1`.
 
+Halaman login dan registrasi memakai API autentikasi backend. Saat development, API memakai proxy `/api` yang sama. Untuk deployment pada domain terpisah, atur `VITE_AUTH_API_URL` ke URL backend (misalnya `https://api.domain.tld`) pada environment build frontend, dan pastikan origin frontend tercantum pada `FRONTEND_ORIGINS` backend. Jika `VITE_AUTH_API_URL` kosong, frontend memakai `VITE_NEWS_API_URL` sebagai URL backend.
+
 ## Menjalankan
 
 ```bash

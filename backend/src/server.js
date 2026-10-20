@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { createHash } from 'node:crypto'
 import cors from 'cors'
 import express from 'express'
@@ -66,6 +67,19 @@ app.use(cors({
     callback(null, isOriginAllowed(origin))
   },
 }))
+
+app.use(['/api/auth', '/api/admin'], express.json({ limit: '10kb' }))
+app.use('/api', async (request, response, next) => {
+  if (!/^\/(auth|admin)(\/|$)/.test(request.path)) return next()
+
+  try {
+    const { default: authApp } = await import('./app.js')
+    return authApp(request, response, next)
+  } catch (error) {
+    console.error('API autentikasi tidak tersedia:', error)
+    return response.status(503).json({ error: 'API autentikasi tidak tersedia. Periksa konfigurasi server.' })
+  }
+})
 
 const newsLimiter = rateLimitMax > 0
   ? rateLimit({ windowMs: 60 * 1000, limit: rateLimitMax, standardHeaders: true, legacyHeaders: false })

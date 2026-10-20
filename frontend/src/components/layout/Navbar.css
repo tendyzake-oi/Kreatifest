@@ -51,6 +51,12 @@
   gap: 0.75rem;
 }
 
+.navbar__cta > span:first-child {
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .navbar__burger {
   display: none;
   align-items: center;

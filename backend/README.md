@@ -17,6 +17,43 @@ The service listens on port `3001` by default. Check `http://localhost:3001/api/
 - `src/news.js` owns RSS sources, normalization, topic labels, sorting, cache, and stale fallback.
 - `src/news.test.js` covers topic classification, regional grouping, image validation, and RSS normalization.
 - `src/server.test.js` covers the CORS origin patterns, the force-refresh decision, and that the CORS middleware actually answers a request.
+- `src/config`, `src/controllers`, `src/middleware`, `src/routes`, and `src/utils` contain the TiDB-backed authentication and admin API. The existing news API remains separate.
+
+## Authentication API and TiDB
+
+The authentication API uses the MySQL-compatible TiDB driver. Copy `.env.example` to `.env`, fill in the TiDB Cloud cluster credentials, set `DB_SSL=true`, and set `JWT_SECRET` to a private random value of at least 32 characters. Never expose database credentials or JWT secrets in frontend variables.
+
+Run `sql/schema.sql` on a new database. For a database created using the earlier Kreatifest schema, run `sql/migrate_auth.sql` instead. The API expects `DB_NAME=kreatifest` unless configured otherwise.
+
+Create the first administrator through `POST /api/admin/setup` with a private `ADMIN_SETUP_KEY` of at least 32 characters. Setup is rate-limited and becomes unavailable once an administrator exists. Remove or rotate the setup key after setup. Subsequent admin accounts should be created through the authenticated admin API.
+
+The first-admin request body is `{"setupKey":"your-private-setup-key","admin":{"name":"Kreatifest Admin","email":"admin@example.com","password":"use-a-strong-password"}}`. If that email already belongs to a regular user, provide the account's current password to promote it; a different password is rejected. Log in through `/api/auth/login` with that email and password and `expectedRole: "admin"`; send the returned token on protected requests as `Authorization: Bearer <token>`.
+
+| Method | Endpoint | Access |
+|---|---|---|
+| `POST` | `/api/auth/register` | Public; creates a regular user and returns a session token |
+| `POST` | `/api/auth/login` | Public; body includes `email`, `password`, and optional `expectedRole` (`user` or `admin`) |
+| `GET` | `/api/auth/me` | Bearer token |
+| `GET` | `/api/auth/me/projects` | Bearer token; projects owned by the current user |
+| `GET` | `/api/auth/me/activities` | Bearer token; activities visible to the current user |
+| `PATCH` | `/api/auth/me/password` | Bearer token; body includes `currentPassword` and `newPassword` |
+| `GET` | `/api/admin/setup/status` | Public; reports whether first-admin setup is available |
+| `POST` | `/api/admin/setup` | Public with the setup key; creates the first admin |
+| `GET` | `/api/admin/overview` | Admin bearer token |
+| `GET`, `POST`, `PATCH`, `DELETE` | `/api/admin/users` | Admin bearer token; user management |
+| `GET`, `POST` | `/api/admin/projects` | Admin bearer token; project listing and creation |
+| `GET` | `/api/admin/activities` | Admin bearer token |
+
+| `GET` | `/api/auth/me/settings` | Authenticated user bearer token; WhatsApp group URL and admin support email |
+| `DELETE` | `/api/auth/me` | Authenticated user bearer token; requires `{"confirmation":"hapus akun"}` |
+| `GET` | `/api/admin/logins` | Admin bearer token; most recent 200 successful logins |
+| `GET` | `/api/admin/settings` | Admin bearer token |
+| `PATCH` | `/api/admin/settings/whatsapp` | Admin bearer token; body includes a WhatsApp invite `url` |
+| `PATCH` | `/api/admin/me/password` | Admin bearer token; body includes `currentPassword` and `newPassword` |
+
+Passwords are hashed with bcrypt before storage. Access tokens expire after eight hours, and password or role changes increment `session_version` to invalidate existing sessions. Public registration cannot assign the admin role.
+
+For an existing database, run the updated `sql/migrate_auth.sql` before deploying this dashboard update. It safely adds login counters and creates the login history table without deleting existing records. Successful login history retains the email and role snapshot if an account is later deleted. Account deletion also removes that account's owned projects. Set `ADMIN_EMAIL` to control the support email shown in the user's forgot-password email draft.
 
 ## Configuration
 

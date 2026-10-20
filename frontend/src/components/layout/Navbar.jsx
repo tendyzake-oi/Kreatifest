@@ -5,9 +5,16 @@ import Icon from '../ui/Icon'
 import ThemeToggle from './ThemeToggle'
 import './Navbar.css'
 
-export default function Navbar() {
+export default function Navbar({ user, onNavigate }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = () => setMenuOpen(false)
+  const dashboardLabel = user?.name || 'Dashboard'
+  const navigateToDashboard = (event) => {
+    closeMenu()
+    if (!onNavigate) return
+    event.preventDefault()
+    onNavigate('/dashboard')
+  }
 
   // Tutup menu mobile dengan tombol Escape
   useEffect(() => {
@@ -37,16 +44,16 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          {/* CTA di dalam menu hanya tampil di mobile */}
-          <Button href="#contact" icon="arrow-up-right" size="sm" className="navbar__cta navbar__cta--mobile" onClick={closeMenu}>
-            Mari Berkolaborasi
+          {/* Tombol dashboard di dalam menu hanya tampil di mobile */}
+          <Button href={user ? '/dashboard' : '/login'} icon="arrow-up-right" size="sm" className="navbar__cta navbar__cta--mobile" onClick={navigateToDashboard} aria-label={user ? `Dashboard ${user.name}` : 'Dashboard'}>
+            {dashboardLabel}
           </Button>
         </nav>
 
         <div className="navbar__actions">
           <ThemeToggle />
-          <Button href="#contact" icon="arrow-up-right" size="sm" className="navbar__cta navbar__cta--desktop">
-            Mari Berkolaborasi
+          <Button href={user ? '/dashboard' : '/login'} icon="arrow-up-right" size="sm" className="navbar__cta navbar__cta--desktop" onClick={navigateToDashboard} aria-label={user ? `Dashboard ${user.name}` : 'Dashboard'}>
+            {dashboardLabel}
           </Button>
           <button
             type="button"
