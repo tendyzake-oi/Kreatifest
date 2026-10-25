@@ -127,9 +127,12 @@ export async function listUsers(req, res) {
 }
 
 export async function createUser(req, res) {
-  const { name, email, password, role = 'user' } = req.body ?? {}
+  const { name, email, password, role = 'user', phone = '' } = req.body ?? {}
   if (!validateName(name) || !isValidEmail(email) || !validatePassword(password)) {
     return res.status(400).json({ error: 'Nama, email, atau kata sandi tidak valid.' })
+  }
+  if (typeof phone !== 'string' || (phone.trim() !== '' && !validatePhone(phone))) {
+    return res.status(400).json({ error: 'Nomor telepon harus berisi 8 sampai 15 digit.' })
   }
   if (!['user', 'admin'].includes(role)) {
     return res.status(400).json({ error: 'Peran akun tidak valid.' })
@@ -137,8 +140,8 @@ export async function createUser(req, res) {
   try {
     const passwordHash = await bcrypt.hash(password, 12)
     const [result] = await pool.execute(
-      'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-      [name.trim(), normalizeEmail(email), passwordHash, role],
+      'INSERT INTO users (name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)',
+      [name.trim(), normalizeEmail(email), phone.trim(), passwordHash, role],
     )
     const [rows] = await pool.execute(
       'SELECT id, name, email, phone, role, created_at, last_login_at, login_count FROM users WHERE id = ? LIMIT 1',
@@ -149,6 +152,70 @@ export async function createUser(req, res) {
     if (isDuplicateEmail(error)) return res.status(409).json({ error: 'Email sudah digunakan akun lain.' })
     throw error
   }
+}
+
+export async function importUsers(req, res) {
+  const rawList = Array.isArray(req.body?.users) ? req.body.users : []
+  if (rawList.length === 0) {
+    return res.status(400).json({ error: 'Tidak ada data pengguna yang valid untuk diimpor.' })
+  }
+
+  const createdUsers = []
+  const updatedUsers = []
+  const failedUsers = []
+
+  for (const item of rawList) {
+    const { name, email, role = 'user', phone = '', password = 'Kreatifest123!' } = item
+    if (!validateName(name) || !isValidEmail(email)) {
+      failedUsers.push({ email, reason: 'Nama atau format email tidak valid' })
+      continue
+    }
+    const cleanRole = role === 'admin' ? 'admin' : 'user'
+    const cleanPhone = typeof phone === 'string' && validatePhone(phone) ? phone.trim() : ''
+    const cleanPass = typeof password === 'string' && password.length >= 8 ? password : 'Kreatifest123!'
+    const normalizedEmail = normalizeEmail(email)
+
+    try {
+      const [existing] = await pool.execute('SELECT id, role, phone FROM users WHERE email = ? LIMIT 1', [normalizedEmail])
+      if (existing.length > 0) {
+        const existingId = existing[0].id
+        const finalPhone = cleanPhone || existing[0].phone || ''
+        await pool.execute(
+          `UPDATE users SET name = ?, phone = ?, role = ?,
+           session_version = session_version + IF(role <> ?, 1, 0) WHERE id = ?`,
+          [name.trim(), finalPhone, cleanRole, cleanRole, existingId],
+        )
+        const [rows] = await pool.execute(
+          'SELECT id, name, email, phone, role, created_at, last_login_at, login_count FROM users WHERE id = ? LIMIT 1',
+          [existingId],
+        )
+        updatedUsers.push(publicUser(rows[0]))
+      } else {
+        const passwordHash = await bcrypt.hash(cleanPass, 12)
+        const [result] = await pool.execute(
+          'INSERT INTO users (name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)',
+          [name.trim(), normalizedEmail, cleanPhone, passwordHash, cleanRole],
+        )
+        const [rows] = await pool.execute(
+          'SELECT id, name, email, phone, role, created_at, last_login_at, login_count FROM users WHERE id = ? LIMIT 1',
+          [result.insertId],
+        )
+        createdUsers.push(publicUser(rows[0]))
+      }
+    } catch (err) {
+      failedUsers.push({ email, reason: err.message || 'Gagal menyimpan ke database' })
+    }
+  }
+
+  return res.json({
+    message: 'Berhasil memproses import: ' + createdUsers.length + ' akun baru dibuat, ' + updatedUsers.length + ' akun diperbarui.' + (failedUsers.length ? ' ' + failedUsers.length + ' akun dilewati.' : ''),
+    createdCount: createdUsers.length,
+    updatedCount: updatedUsers.length,
+    failedCount: failedUsers.length,
+    createdUsers,
+    updatedUsers,
+    failedUsers,
+  })
 }
 
 export async function updateUser(req, res) {

@@ -3,6 +3,7 @@ import { rateLimit } from 'express-rate-limit'
 import {
   createProject,
   createUser,
+  importUsers,
   deleteUser,
   getOverview,
   getSettings,
@@ -37,6 +38,7 @@ router.patch('/settings/whatsapp', updateWhatsAppGroup)
 router.patch('/me/password', updateOwnPassword)
 router.get('/users', listUsers)
 router.post('/users', createUser)
+router.post('/users/import', importUsers)
 router.patch('/users/:id', updateUser)
 router.delete('/users/:id', deleteUser)
 router.get('/projects', listProjects)

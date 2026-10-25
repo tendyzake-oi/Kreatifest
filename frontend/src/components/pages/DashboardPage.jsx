@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { brand } from '../../data/content'
 import { authRequest } from '../../services/auth'
 import Icon from '../ui/Icon'
+import { exportUsersToExcel, downloadExcelTemplate, parseUsersFromExcel } from '../../utils/excel'
 import './Portal.css'
 
 const userNavigation = [
@@ -51,6 +52,14 @@ export default function DashboardPage({ role, user, token, onLogout, onLandingPa
   const [editingProfile, setEditingProfile] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [deleteUserConfirmation, setDeleteUserConfirmation] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [exportRole, setExportRole] = useState('all')
+  const [exporting, setExporting] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importFile, setImportFile] = useState(null)
+  const [importPreview, setImportPreview] = useState(null)
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState('')
 
   const sectionTitle = navigation.find((item) => item.id === activePage)?.label || 'Ringkasan'
   const reloadData = () => {
@@ -259,6 +268,121 @@ export default function DashboardPage({ role, user, token, onLogout, onLandingPa
     setNotice('')
   }
 
+  const filteredUsers = users.filter((entry) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.trim().toLowerCase()
+    return (entry.name || '').toLowerCase().includes(q) || (entry.email || '').toLowerCase().includes(q)
+  })
+
+  async function handleExportExcel() {
+    setExporting(true)
+    setError('')
+    try {
+      await exportUsersToExcel(users, exportRole)
+      setNotice('Data akun berhasil diekspor ke Microsoft Excel.')
+    } catch (err) {
+      setError(err.message || 'Gagal mengekspor data ke Excel.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  async function handleFileSelect(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setImportFile(file)
+    setImportError('')
+    try {
+      const parsed = await parseUsersFromExcel(file)
+      setImportPreview(parsed)
+      if (parsed.validUsers.length === 0) {
+        setImportError('Tidak ada data akun valid yang ditemukan dalam file.')
+      }
+    } catch (err) {
+      setImportError(err.message || 'Gagal membaca file Excel.')
+      setImportPreview(null)
+    }
+  }
+
+  async function handleExecuteImport() {
+    if (!importPreview || importPreview.validUsers.length === 0) return
+    setImporting(true)
+    setImportError('')
+    setError('')
+    setNotice('')
+
+    try {
+      let createdCount = 0
+      let updatedCount = 0
+      let failedCount = 0
+      const currentUsersMap = new Map(users.map((u) => [(u.email || '').trim().toLowerCase(), u]))
+      const newlyCreatedUsers = []
+      const updatedUsersList = []
+
+      for (const item of importPreview.validUsers) {
+        const emailKey = (item.email || '').trim().toLowerCase()
+        const existing = currentUsersMap.get(emailKey)
+
+        if (existing) {
+          try {
+            const res = await request('/admin/users/' + existing.id, {
+              method: 'PATCH',
+              body: JSON.stringify({
+                name: item.name,
+                email: item.email,
+                phone: item.phone !== undefined && item.phone !== '' ? item.phone : (existing.phone || ''),
+                role: item.role || existing.role,
+              }),
+            })
+            if (res.user) {
+              updatedCount++
+              updatedUsersList.push(res.user)
+              if (String(res.user.id) === String(user?.id)) {
+                onUserUpdated(res.user)
+              }
+            }
+          } catch {
+            failedCount++
+          }
+        } else {
+          try {
+            const res = await request('/admin/users', {
+              method: 'POST',
+              body: JSON.stringify(item),
+            })
+            if (res.user) {
+              createdCount++
+              newlyCreatedUsers.push(res.user)
+            }
+          } catch {
+            failedCount++
+          }
+        }
+      }
+
+      setUsers((current) => {
+        const updatedMap = new Map(updatedUsersList.map((u) => [u.id, u]))
+        const mapped = current.map((u) => (updatedMap.has(u.id) ? updatedMap.get(u.id) : u))
+        return [...newlyCreatedUsers, ...mapped]
+      })
+
+      const summaryParts = []
+      summaryParts.push('Proses import selesai!')
+      if (createdCount > 0) summaryParts.push(createdCount + ' akun baru ditambahkan.')
+      if (updatedCount > 0) summaryParts.push(updatedCount + ' akun diperbarui namanya/datanya.')
+      if (failedCount > 0) summaryParts.push(failedCount + ' akun dilewati/gagal.')
+
+      setNotice(summaryParts.join(' '))
+      setShowImportModal(false)
+      setImportPreview(null)
+      setImportFile(null)
+    } catch (err) {
+      setImportError(err.message || 'Gagal mengimpor akun.')
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const mailtoHref = `mailto:${encodeURIComponent(settings.adminEmail || 'kreatifest.ind@gmail.com')}?subject=${encodeURIComponent('Permintaan bantuan lupa kata sandi Kreatifest')}&body=${encodeURIComponent(`Halo Admin Kreatifest,\n\nSaya ${user?.name} (${user?.email}) lupa kata sandi akun saya. Mohon bantu hapus akun saya agar saya dapat mendaftar kembali.\n\nTerima kasih.`)}`
 
   return (
@@ -355,7 +479,121 @@ export default function DashboardPage({ role, user, token, onLogout, onLandingPa
                     </form>
                     {editingUserId && <form className="portal-form portal-delete-form" onSubmit={deleteUserByConfirmation}><label htmlFor="admin-delete-confirmation">Untuk menghapus akun ini, ketik <strong>hapus akun</strong></label><div className="portal-form__actions"><input id="admin-delete-confirmation" value={deleteUserConfirmation} onChange={(event) => setDeleteUserConfirmation(event.target.value)} /><button className="portal-danger-button" type="submit" disabled={saving}>Hapus akun</button></div></form>}
                   </section>
-                  <section className="portal-panel"><div className="portal-panel__heading"><div><h2>Semua akun</h2><p>{users.length} akun terdaftar</p></div></div><div className="portal-table-wrap"><table className="portal-table"><thead><tr><th>Nama / email</th><th>Role</th><th>Login terakhir</th><th>Total login</th><th>Aksi</th></tr></thead><tbody>{users.map((entry) => <tr key={entry.id}><td><strong>{entry.name}</strong><small>{entry.email}</small></td><td>{entry.role === 'admin' ? 'Admin' : 'Pengguna'}</td><td>{formatDate(entry.lastLoginAt, true)}</td><td>{entry.loginCount}</td><td><div className="portal-table__actions"><button className="portal-secondary-button" type="button" onClick={() => beginEditUser(entry)}>Edit</button><button className="portal-danger-button" type="button" disabled={saving} onClick={() => removeUser(entry)}>Hapus</button></div></td></tr>)}</tbody></table></div>{!users.length && <p className="portal-dashboard__message">Belum ada akun pengguna.</p>}</section>
+                  <section className="portal-panel">
+                    <div className="portal-panel__heading">
+                      <div>
+                        <h2>Semua akun</h2>
+                        <p>{searchQuery.trim() ? `Menampilkan ${filteredUsers.length} dari ${users.length} akun terdaftar` : `${users.length} akun terdaftar`}</p>
+                      </div>
+                    </div>
+
+                    <div className="portal-users-toolbar">
+                      <div className="portal-search-box">
+                        <Icon name="search" size={16} className="portal-search-icon" />
+                        <input
+                          type="search"
+                          className="portal-search-input"
+                          placeholder="Cari username / nama akun..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          aria-label="Cari username atau nama akun"
+                        />
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            className="portal-search-clear"
+                            onClick={() => setSearchQuery('')}
+                            aria-label="Reset pencarian"
+                            title="Reset"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="portal-table-tools">
+                        <div className="portal-export-group">
+                          <select
+                            className="portal-export-select"
+                            value={exportRole}
+                            onChange={(e) => setExportRole(e.target.value)}
+                            aria-label="Filter role untuk ekspor"
+                          >
+                            <option value="all">Semua Role</option>
+                            <option value="user">Hanya Pengguna</option>
+                            <option value="admin">Hanya Admin</option>
+                          </select>
+                          <button
+                            type="button"
+                            className="portal-action-btn portal-action-btn--excel"
+                            onClick={handleExportExcel}
+                            disabled={exporting || users.length === 0}
+                            title="Ekspor tabel akun ke format Microsoft Excel (.xlsx)"
+                          >
+                            <Icon name="download" size={15} />
+                            {exporting ? 'Mengekspor...' : 'Ekspor Excel'}
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="portal-action-btn portal-action-btn--import"
+                          onClick={() => {
+                            setShowImportModal(true)
+                            setImportError('')
+                            setImportPreview(null)
+                            setImportFile(null)
+                          }}
+                          title="Import data akun dari file Microsoft Excel (.xlsx)"
+                        >
+                          <Icon name="upload" size={15} />
+                          Import Excel
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="portal-table-wrap">
+                      <table className="portal-table">
+                        <thead>
+                          <tr>
+                            <th>Nama / email</th>
+                            <th>Role</th>
+                            <th>Nomor telepon</th>
+                            <th>Total login</th>
+                            <th>Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredUsers.map((entry) => (
+                            <tr key={entry.id}>
+                              <td>
+                                <strong>{entry.name}</strong>
+                                <small>{entry.email}</small>
+                              </td>
+                              <td>{entry.role === 'admin' ? 'Admin' : 'Pengguna'}</td>
+                              <td>{entry.phone ? <span className="portal-phone-cell">{entry.phone}</span> : <span style={{ color: 'var(--color-text-soft)' }}>-</span>}</td>
+                              <td>{entry.loginCount}</td>
+                              <td>
+                                <div className="portal-table__actions">
+                                  <button className="portal-secondary-button" type="button" onClick={() => beginEditUser(entry)}>Edit</button>
+                                  <button className="portal-danger-button" type="button" disabled={saving} onClick={() => removeUser(entry)}>Hapus</button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {users.length > 0 && filteredUsers.length === 0 && (
+                      <div className="portal-search-empty">
+                        <p>Tidak ada akun yang sesuai dengan pencarian &ldquo;<strong>{searchQuery}</strong>&rdquo;.</p>
+                        <button type="button" className="portal-secondary-button" onClick={() => setSearchQuery('')}>Reset pencarian</button>
+                      </div>
+                    )}
+
+                    {!users.length && <p className="portal-dashboard__message">Belum ada akun pengguna.</p>}
+                  </section>
                 </>
               )}
               {activePage === 'logins' && isAdmin && <section className="portal-panel"><div className="portal-panel__heading"><div><h2>Riwayat login</h2><p>Maksimal 200 akses terakhir, termasuk akun yang sudah dihapus.</p></div></div><LoginTable logins={logins} /></section>}
@@ -406,6 +644,160 @@ export default function DashboardPage({ role, user, token, onLogout, onLandingPa
           <p className="portal-demo-footer"><Icon name="info" size={15} /> Data ditampilkan dari akun dan database Kreatifest.</p>
         </div>
       </section>
+    
+      {showImportModal && (
+        <div
+          className="portal-modal-overlay"
+          onClick={() => !importing && setShowImportModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="portal-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="portal-modal__header">
+              <div>
+                <h2>Import Akun dari Ms. Excel</h2>
+                <p>Tambah akun baru atau perbarui nama &amp; data akun yang sudah ada.</p>
+              </div>
+              <button
+                type="button"
+                className="portal-modal__close"
+                onClick={() => !importing && setShowImportModal(false)}
+                disabled={importing}
+                aria-label="Tutup jendela"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="portal-template-banner">
+              <span>Kolom: <strong>Nama, Email, Role, No. Telepon, Password</strong></span>
+              <button type="button" onClick={downloadExcelTemplate}>
+                <Icon name="download" size={13} /> Unduh Format Template
+              </button>
+            </div>
+
+            {importError && (
+              <p className="portal-form__error" style={{ marginBottom: '1rem' }} role="alert">
+                {importError}
+              </p>
+            )}
+
+            {!importPreview && (
+              <label className="portal-dropzone">
+                <input
+                  type="file"
+                  accept=".xlsx, .xls, .csv"
+                  onChange={handleFileSelect}
+                  disabled={importing}
+                />
+                <span className="portal-dropzone__icon">
+                  <Icon name="upload" size={24} />
+                </span>
+                <strong>Pilih file Excel atau klik di sini</strong>
+                <span>Mendukung format .xlsx dan .xls (Jika email sudah terdaftar, data nama &amp; telepon akan diperbarui otomatis)</span>
+              </label>
+            )}
+
+            {importPreview && (
+              <div className="portal-import-preview">
+                <h4>Pratinjau Data ({importFile?.name})</h4>
+                <div className="portal-import-stats">
+                  <span className="portal-badge--success">
+                    ✓ {importPreview.validUsers.length} data terbaca dari Excel
+                  </span>
+                  {importPreview.invalidRows.length > 0 && (
+                    <span className="portal-badge--warning">
+                      ⚠ {importPreview.invalidRows.length} baris tidak valid (dilewati)
+                    </span>
+                  )}
+                </div>
+
+                <div className="portal-table-wrap" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  <table className="portal-preview-table">
+                    <thead>
+                      <tr>
+                        <th>Status</th>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>No. Telp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importPreview.validUsers.slice(0, 8).map((u, i) => {
+                        const isExisting = users.some(
+                          (existing) => (existing.email || '').trim().toLowerCase() === (u.email || '').trim().toLowerCase()
+                        )
+                        return (
+                          <tr key={i}>
+                            <td>
+                              <span
+                                style={{
+                                  fontSize: '0.68rem',
+                                  padding: '0.15rem 0.45rem',
+                                  borderRadius: '999px',
+                                  fontWeight: 650,
+                                  background: isExisting ? '#fef3c7' : '#dcfce7',
+                                  color: isExisting ? '#92400e' : '#166534',
+                                }}
+                              >
+                                {isExisting ? 'Update' : 'Baru'}
+                              </span>
+                            </td>
+                            <td><strong>{u.name}</strong></td>
+                            <td>{u.email}</td>
+                            <td>{u.role === 'admin' ? 'Admin' : 'Pengguna'}</td>
+                            <td>{u.phone || '-'}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {importPreview.validUsers.length > 8 && (
+                  <p style={{ fontSize: '0.7rem', color: 'var(--color-text-soft)', marginTop: '0.45rem', textAlign: 'center' }}>
+                    ...dan {importPreview.validUsers.length - 8} akun lainnya
+                  </p>
+                )}
+
+                <div style={{ marginTop: '0.75rem', textAlign: 'right' }}>
+                  <button
+                    type="button"
+                    className="portal-secondary-button"
+                    onClick={() => {
+                      setImportPreview(null)
+                      setImportFile(null)
+                      setImportError('')
+                    }}
+                    disabled={importing}
+                  >
+                    Ganti file
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="portal-modal__actions">
+              <button
+                type="button"
+                className="portal-secondary-button"
+                onClick={() => setShowImportModal(false)}
+                disabled={importing}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className="portal-submit"
+                onClick={handleExecuteImport}
+                disabled={importing || !importPreview || importPreview.validUsers.length === 0}
+              >
+                {importing ? 'Memproses import...' : 'Proses ' + (importPreview?.validUsers?.length || 0) + ' Akun'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
