@@ -6,11 +6,30 @@ import Icon from '../ui/Icon'
 import './Contact.css'
 
 export default function Contact() {
-  // State untuk menyimpan indeks FAQ yang sedang terbuka
   const [openIndex, setOpenIndex] = useState(null)
 
   const toggleFaq = (index) => {
     setOpenIndex(openIndex === index ? null : index)
+  }
+
+  // Fungsi untuk menangani klik pada channel email secara dinamis
+  const handleEmailClick = (channel, e) => {
+    if (channel.icon === 'mail') {
+      // Cek apakah pengguna menggunakan perangkat mobile (HP/Tablet)
+      const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+      // Jika di komputer/laptop, cegah perilaku mailto standar dan buka Gmail Web di tab baru
+      if (!isMobile) {
+        e.preventDefault()
+        const to = encodeURIComponent(channel.value)
+        const su = channel.subject ? encodeURIComponent(channel.subject) : ''
+        const body = channel.body ? encodeURIComponent(channel.body) : ''
+        
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${su}&body=${body}`
+        window.open(gmailUrl, '_blank', 'noopener,noreferrer')
+      }
+      // Jika di HP/Mobile, biarkan event berjalan secara normal (membuka aplikasi mailto)
+    }
   }
 
   return (
@@ -28,10 +47,11 @@ export default function Contact() {
                 const textParam = channel.text ? `?text=${encodeURIComponent(channel.text)}` : ''
                 href = `https://wa.me/${channel.value}${textParam}`
               } else if (channel.icon === 'mail') {
+                // Default href menggunakan protokol mailto (untuk HP/pengguna app mail)
                 const to = encodeURIComponent(channel.value)
                 const su = channel.subject ? encodeURIComponent(channel.subject) : ''
                 const body = channel.body ? encodeURIComponent(channel.body) : ''
-                href = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${su}&body=${body}`
+                href = `mailto:${to}?subject=${su}&body=${body}`
               } else if (channel.icon === 'instagram') {
                 href = `https://ig.me/m/${channel.value}`
               } else {
@@ -51,6 +71,7 @@ export default function Contact() {
                     href={href} 
                     target="_blank" 
                     rel="noopener noreferrer"
+                    onClick={(e) => handleEmailClick(channel, e)}
                     style={{ display: 'flex', gap: '1rem', alignItems: 'center', textDecoration: 'none', color: 'inherit', width: '100%' }}
                   >
                     <IconTile name={channel.icon} tone={channel.tone} />

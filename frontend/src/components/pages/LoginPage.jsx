@@ -4,13 +4,7 @@ import { authRequest } from '../../services/auth'
 import Icon from '../ui/Icon'
 import './Portal.css'
 
-const roles = [
-  { id: 'user', label: 'Pengguna', description: 'Lihat proyek dan aktivitas Anda' },
-  { id: 'admin', label: 'Admin', description: 'Kelola proyek dan permintaan' },
-]
-
 export default function LoginPage({ onLogin, onRegister, notice = '' }) {
-  const [selectedRole, setSelectedRole] = useState('user')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -20,15 +14,32 @@ export default function LoginPage({ onLogin, onRegister, notice = '' }) {
     setError('')
     setSubmitting(true)
     const formData = new FormData(event.currentTarget)
+    const email = formData.get('email')
+    const password = formData.get('password')
+
     try {
-      const result = await authRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({
-          email: formData.get('email'),
-          password: formData.get('password'),
-          expectedRole: selectedRole,
-        }),
-      })
+      let result
+      try {
+        // First try standard login without expectedRole
+        result = await authRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        })
+      } catch (firstErr) {
+        // Fallback in case deployed backend still requires expectedRole: 'admin'
+        if (
+          firstErr.status === 403 &&
+          (firstErr.message?.toLowerCase().includes('admin') ||
+            firstErr.message?.toLowerCase().includes('pilih jenis akun'))
+        ) {
+          result = await authRequest('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password, expectedRole: 'admin' }),
+          })
+        } else {
+          throw firstErr
+        }
+      }
       onLogin(result)
     } catch (requestError) {
       setError(requestError.message)
@@ -63,23 +74,7 @@ export default function LoginPage({ onLogin, onRegister, notice = '' }) {
         <div className="portal-login__form-content">
           <span className="portal-eyebrow">Selamat datang kembali</span>
           <h2>Masuk ke akun Anda</h2>
-          <p className="portal-login__subtitle">Pilih jenis akun, lalu masukkan detail untuk melanjutkan.</p>
-
-          <div className="portal-role-picker" role="group" aria-label="Jenis akun">
-            {roles.map((item) => (
-              <button
-                className={`portal-role ${selectedRole === item.id ? 'is-selected' : ''}`}
-                key={item.id}
-                type="button"
-                aria-pressed={selectedRole === item.id}
-                onClick={() => setSelectedRole(item.id)}
-              >
-                <span className="portal-role__icon"><Icon name={item.id === 'admin' ? 'layers' : 'users'} size={19} /></span>
-                <span className="portal-role__copy"><strong>{item.label}</strong><small>{item.description}</small></span>
-                <span className="portal-role__radio" aria-hidden="true" />
-              </button>
-            ))}
-          </div>
+          <p className="portal-login__subtitle">Masukkan email dan kata sandi untuk melanjutkan.</p>
 
           <form className="portal-form" onSubmit={handleSubmit}>
             <label htmlFor="portal-email">Email</label>
@@ -105,7 +100,7 @@ export default function LoginPage({ onLogin, onRegister, notice = '' }) {
 
             {error && <p className="portal-form__error" role="alert">{error}</p>}
             <button className="portal-submit" type="submit" disabled={submitting}>
-              {submitting ? 'Memeriksa akun...' : `Masuk sebagai ${selectedRole === 'admin' ? 'Admin' : 'Pengguna'}`}
+              {submitting ? 'Memeriksa akun...' : 'Masuk'}
               <Icon name="arrow-up-right" size={18} />
             </button>
           </form>

@@ -65,11 +65,11 @@ export async function register(req, res) {
 }
 
 export async function login(req, res) {
-  const { email, password, expectedRole = 'user' } = req.body ?? {}
+  const { email, password, expectedRole } = req.body ?? {}
   if (typeof email !== 'string' || typeof password !== 'string') {
     return res.status(400).json({ error: 'Email dan kata sandi wajib diisi.' })
   }
-  if (!['user', 'admin'].includes(expectedRole)) {
+  if (expectedRole !== undefined && expectedRole !== null && !['user', 'admin'].includes(expectedRole)) {
     return res.status(400).json({ error: 'Jenis login tidak valid.' })
   }
   if (!isValidEmail(email) || !password || Buffer.byteLength(password, 'utf8') > 72) {
@@ -84,7 +84,7 @@ export async function login(req, res) {
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
     return res.status(401).json({ error: 'Email atau kata sandi salah.' })
   }
-  if (user.role !== expectedRole) {
+  if (expectedRole && user.role !== expectedRole) {
     return res.status(403).json({
       error: expectedRole === 'admin'
         ? 'Akun ini belum memiliki akses admin. Silakan masuk sebagai pengguna.'
