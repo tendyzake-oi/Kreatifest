@@ -48,7 +48,7 @@ export default function RegisterPage({ onRegister, onLogin }) {
         <div className="portal-login__message">
           <span className="portal-eyebrow"><span /> Mulai berkolaborasi</span>
           <h1>Setiap karya<br /><em>dimulai dari ide.</em></h1>
-          <p>Buat akun untuk mengikuti progres proyek, melihat pembaruan, dan berkolaborasi bersama tim Kreatifest.</p>
+          <p>Buat akun untuk bergabung dengan komunitas kreatifest serta fitur lainnya</p>
           <div className="portal-login__note">
             <Icon name="sparkles" size={20} />
             <span>Satu ruang untuk menyatukan ide, proses, dan hasil kreatif Anda.</span>

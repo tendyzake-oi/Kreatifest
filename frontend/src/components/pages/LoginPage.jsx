@@ -58,7 +58,7 @@ export default function LoginPage({ onLogin, onRegister, notice = '' }) {
         <div className="portal-login__message">
           <span className="portal-eyebrow"><span /> Ruang kolaborasi Kreatifest</span>
           <h1>Ide kreatif,<br /><em>langkah nyata.</em></h1>
-          <p>Masuk ke ruang kerja Anda untuk mengikuti perkembangan proyek dan berkolaborasi bersama tim Kreatifest.</p>
+          <p>Masuk ke Dashboard Anda untuk mengikuti perkembangan serta berkolaborasi dengan tim kreatifest</p>
           <div className="portal-login__note">
             <Icon name="sparkles" size={20} />
             <span>Tempat ide baik tumbuh menjadi karya yang berdampak.</span>
