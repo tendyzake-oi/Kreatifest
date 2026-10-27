@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { contact } from '../../data/content'
 import SectionHeading from '../ui/SectionHeading'
 import IconTile from '../ui/IconTile'
@@ -28,15 +29,20 @@ export default function Contact() {
         const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${su}&body=${body}`
         window.open(gmailUrl, '_blank', 'noopener,noreferrer')
       }
-      // Jika di HP/Mobile, biarkan event berjalan secara normal (membuka aplikasi mailto)
     }
   }
 
   return (
     <section id="contact" className="section contact" aria-labelledby="contact-title">
       <div className="container--wide contact__inner">
-        {/* Bagian Kiri: Channels */}
-        <div className="contact__info">
+        {/* Bagian Kiri: Channels dengan Motion.dev */}
+        <motion.div
+          className="contact__info"
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        >
           <SectionHeading id="contact-title" eyebrow={contact.eyebrow} title={contact.title} description={contact.description} />
 
           <ul className="contact__channels" style={{ listStyle: 'none', padding: 0 }}>
@@ -47,7 +53,6 @@ export default function Contact() {
                 const textParam = channel.text ? `?text=${encodeURIComponent(channel.text)}` : ''
                 href = `https://wa.me/${channel.value}${textParam}`
               } else if (channel.icon === 'mail') {
-                // Default href menggunakan protokol mailto (untuk HP/pengguna app mail)
                 const to = encodeURIComponent(channel.value)
                 const su = channel.subject ? encodeURIComponent(channel.subject) : ''
                 const body = channel.body ? encodeURIComponent(channel.body) : ''
@@ -66,7 +71,13 @@ export default function Contact() {
               }
 
               return (
-                <li key={channel.label} className="contact__channel" style={{ marginBottom: '1rem' }}>
+                <motion.li
+                  key={channel.label}
+                  className="contact__channel"
+                  style={{ marginBottom: '1rem' }}
+                  whileHover={{ x: 6, scale: 1.015 }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                >
                   <a 
                     href={href} 
                     target="_blank" 
@@ -82,14 +93,20 @@ export default function Contact() {
                       </p>
                     </div>
                   </a>
-                </li>
+                </motion.li>
               )
             })}
           </ul>
-        </div>
+        </motion.div>
 
-        {/* Bagian Kanan: Komponen Accordion FAQ */}
-        <div className="contact__faq">
+        {/* Bagian Kanan: Komponen Accordion FAQ dengan Motion.dev */}
+        <motion.div
+          className="contact__faq"
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.65, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
           <h3 className="faq__title">Pertanyaan Umum</h3>
           <div className="faq__list">
             {contact.faqs.map((faq, index) => {
@@ -102,16 +119,25 @@ export default function Contact() {
                       <Icon name={isOpen ? 'chevronUp' : 'chevronDown'} size={20} />
                     </span>
                   </button>
-                  {isOpen && (
-                    <div className="faq__answer">
-                      <p>{faq.answer}</p>
-                    </div>
-                  )}
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        className="faq__answer"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        style={{ overflow: 'hidden' }}
+                      >
+                        <p>{faq.answer}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )
             })}
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

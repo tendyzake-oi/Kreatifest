@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { motion } from 'motion/react'
 import { highlights, projects } from '../../data/content'
 import Icon from '../ui/Icon'
 import SectionHeading from '../ui/SectionHeading'
@@ -103,7 +104,13 @@ export default function Projects() {
 
   return (
     <section id="portfolio" className="section projects" aria-labelledby="projects-title">
-      <div className="container">
+      <motion.div
+        className="container"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+      >
         <SectionHeading
           id="projects-title"
           eyebrow={projects.eyebrow}
@@ -181,7 +188,7 @@ export default function Projects() {
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

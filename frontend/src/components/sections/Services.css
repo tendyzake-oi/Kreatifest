@@ -25,8 +25,20 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease);
+  cursor: default;
+  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
+.services__card:hover {
+  border-color: var(--brand-violet);
+  box-shadow: 0 16px 36px -10px rgba(110, 93, 232, 0.18);
+}
+.services__card .icon-tile {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.services__card:hover .icon-tile {
+  transform: scale(1.1) rotate(5deg);
+}
+
 .services__card h3 { margin: 1.5rem 0 0.75rem; font-size: 1.2rem; }
 .services__card p { font-size: 0.9rem; line-height: 1.75; color: var(--color-text-muted); }
 

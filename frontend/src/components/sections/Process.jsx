@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { process } from '../../data/content'
 import SectionHeading from '../ui/SectionHeading'
 import './Process.css'
@@ -19,7 +20,13 @@ const brandLogos = Object.entries(
 export default function Process() {
   return (
     <section id="process" className="section process" aria-labelledby="process-title">
-      <div className="container--wide">
+      <motion.div
+        className="container--wide"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+      >
         <SectionHeading id="process-title" eyebrow={process.eyebrow} title={process.title} tone="inverse" />
 
         {brandLogos.length > 0 && (
@@ -46,7 +53,7 @@ export default function Process() {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </section>
   )
 }

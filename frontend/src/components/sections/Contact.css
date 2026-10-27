@@ -15,6 +15,12 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background-color 0.25s var(--ease);
+}
+
+.contact__channel:hover {
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 8px 24px -6px rgba(99, 102, 241, 0.12);
 }
 .contact__channel-label {
   font-size: 0.72rem;
@@ -50,12 +56,18 @@
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   overflow: hidden;
-  transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+  transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.faq__item:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.06);
 }
 
 .faq__item--open {
   border-color: var(--color-focus, #6366f1);
   background: var(--color-surface);
+  box-shadow: 0 8px 24px -6px rgba(99, 102, 241, 0.12);
 }
 
 .faq__question {
@@ -72,10 +84,11 @@
   text-align: left;
   cursor: pointer;
   gap: 1rem;
+  transition: color 0.2s var(--ease);
 }
 
 .faq__question:hover {
-  opacity: 0.85;
+  color: var(--color-focus, #6366f1);
 }
 
 .faq__icon {
@@ -83,6 +96,11 @@
   align-items: center;
   justify-content: center;
   color: var(--color-text-soft);
+  transition: transform 0.25s var(--ease), color 0.2s var(--ease);
+}
+
+.faq__question:hover .faq__icon {
+  color: var(--color-focus, #6366f1);
 }
 
 .faq__answer {

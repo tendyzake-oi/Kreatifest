@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'motion/react'
 import SectionHeading from '../ui/SectionHeading'
 import Icon from '../ui/Icon'
 import { fetchLatestNews, FALLBACK_NEWS } from '../../services/news'
@@ -72,13 +73,21 @@ function NewsCarousel({ region, articles }) {
   }
 
   return (
-    <article
+    <motion.article
       className="news-card"
       aria-label={region.label}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocus={() => setIsPaused(true)}
       onBlur={() => setIsPaused(false)}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      whileHover={{ y: -6 }}
+      transition={{
+        y: { type: 'spring', stiffness: 350, damping: 25 },
+        opacity: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+      }}
     >
       <div className="news-card__topline">
         <span className={`news-card__region news-card__region--${region.key}`}>{region.tag}</span>
@@ -138,7 +147,7 @@ function NewsCarousel({ region, articles }) {
           <Icon name="arrow-right" size={18} />
         </button>
       </div>
-    </article>
+    </motion.article>
   )
 }
 
@@ -182,7 +191,13 @@ export default function News() {
   return (
     <section id="news" className="section news-section" aria-labelledby="news-title">
       <div className="container">
-        <div className="news-section__intro">
+        <motion.div
+          className="news-section__intro"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
           <SectionHeading
             id="news-title"
             eyebrow="Insights & Updates"
@@ -190,7 +205,7 @@ export default function News() {
             description="Kabar terkini seputar SEO, media sosial, konten, iklan digital, dan teknologi pemasaran."
           />
           <p className="news-section__note">Sorotan digital marketing dari Indonesia dan dunia</p>
-        </div>
+        </motion.div>
 
         {isLoading && !hasArticles && (
           <p className="news-section__message" role="status">Memuat berita terbaru...</p>

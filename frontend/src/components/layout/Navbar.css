@@ -27,22 +27,53 @@
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--color-text);
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+.navbar__logo:hover {
+  opacity: 0.88;
+  transform: scale(1.02);
 }
 
 .navbar__logo-img {
   height: 3.2rem; /* Atur tinggi logo sesuai kebutuhan */
   width: auto;
   object-fit: contain;
+  transition: transform 0.3s var(--ease);
+}
+
+.navbar__logo:hover .navbar__logo-img {
+  transform: rotate(-3deg) scale(1.05);
 }
 
 .navbar__links { display: flex; gap: 1.75rem; }
 .navbar__links a {
+  position: relative;
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-text-muted);
-  transition: color 0.2s var(--ease);
+  transition: color 0.25s var(--ease), transform 0.2s var(--ease);
 }
-.navbar__links a:hover { color: var(--color-accent); }
+
+.navbar__links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--color-accent, #6366f1);
+  border-radius: 2px;
+  transition: width 0.25s var(--ease);
+}
+
+.navbar__links a:hover {
+  color: var(--color-accent);
+}
+
+.navbar__links a:hover::after {
+  width: 100%;
+}
 
 .navbar__actions {
   justify-self: end;
@@ -67,6 +98,16 @@
   border: 1px solid var(--color-border-strong);
   background: var(--color-surface);
   color: var(--color-text);
+  transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.navbar__burger:hover {
+  transform: scale(1.06);
+  border-color: var(--color-focus, #6366f1);
+}
+
+.navbar__burger:active {
+  transform: scale(0.95);
 }
 
 .navbar__cta--mobile { display: none; }
